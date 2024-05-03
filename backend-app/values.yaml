@@ -5,10 +5,10 @@
 replicaCount: 1
 
 image:
-  repository: backend
+  repository: 211125489433.dkr.ecr.us-east-2.amazonaws.com/backend
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "local"
+  tag: "latest"
 
 imagePullSecrets: []
 nameOverride: ""
@@ -40,7 +40,7 @@ securityContext: {}
   # runAsUser: 1000
 
 service:
-  type: ClusterIP
+  type: NodePort
   port: 80
 
 backend:
@@ -48,15 +48,25 @@ backend:
 
 ingress:
   enabled: true
-  className: ""
-  annotations: {}
+  className: "alb"
+  annotations:
+    #alb.ingress.kubernetes.io/scheme: internet-facing
+    #alb.ingress.kubernetes.io/load-balancer-name: app-lb
+    #alb.ingress.kubernetes.io/group.name: alb-devops-group
+    #alb.ingress.kubernetes.io/group.name: alb-devops-group
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/subnets: subnet-005e81382c63615ce,subnet-09367fe147a8e115f,subnet-0b82d0a30f7f50665
+   # alb.ingress.kubernetes.io/target-type: ip    
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/tags: Team= devops
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
   hosts:
-    - host: api.local
+    - host: api.mailall.io
       paths:
         - path: /
-          pathType: ImplementationSpecific
+          pathType: Prefix
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
