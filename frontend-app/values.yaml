@@ -43,6 +43,9 @@ service:
   type: ClusterIP
   port: 80
 
+backend:
+  port: 3000
+
 ingress:
   enabled: true
   className: ""
