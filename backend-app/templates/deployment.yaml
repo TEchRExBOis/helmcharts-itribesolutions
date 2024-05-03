@@ -35,7 +35,7 @@ spec:
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
-          command: ["/bin/bash", "-c", "php artisan key:generate && php artisan passport:install && php artisan migrate && php artisan serve --host=0.0.0.0"]
+          command: ["/bin/bash", "-c", "php artisan key:generate && php artisan migrate && php artisan passport:install && php artisan serve --host=0.0.0.0"]
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
