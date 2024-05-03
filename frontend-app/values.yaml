@@ -46,7 +46,7 @@ service:
 ingress:
   enabled: true
   className: ""
-  annotations: {}
+  annotations: 
     #alb.ingress.kubernetes.io/scheme: internet-facing
     #alb.ingress.kubernetes.io/load-balancer-name: app-lb
     #alb.ingress.kubernetes.io/group.name: alb-devops-group
