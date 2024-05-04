@@ -5,10 +5,10 @@
 replicaCount: 1
 
 image:
-  repository: 211125489433.dkr.ecr.us-east-2.amazonaws.com/frontend
+  repository: "frontend" #211125489433.dkr.ecr.us-east-2.amazonaws.com/frontend
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "latest"
+  tag: "local" #"latest"
 
 imagePullSecrets: []
 nameOverride: ""

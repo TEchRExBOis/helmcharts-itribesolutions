@@ -30,12 +30,36 @@ spec:
       serviceAccountName: {{ include "backend-app.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        - name: init-container
+          image: python
+          command: ["bash", "-c", "apt update && apt install awscli -y && pip3 install boto3 && aws configure set aws_access_key_id ***** && aws configure set aws_secret_access_key *****
+ && python config-scripts/script.py"]
+          volumeMounts:
+            - name: config-scripts-volume-backend
+              mountPath: /config-scripts
+            - name: env-volume-backend
+              mountPath: /mnt 
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           command: ["/bin/bash", "-c", "php artisan key:generate && php artisan migrate && php artisan passport:install && php artisan serve --host=0.0.0.0"]
+          command:
+            - "/bin/bash"
+            - "-c"
+            - |
+              sed -i 's/DATA="//g; s/"$//; s/^"//' /mnt/.env && \
+              sed -i 's/\("[^"]*"\)\|\s/\1\n/g' /mnt/.env && \
+              cp /mnt/.env . && \
+              php artisan key:generate && \
+              php artisan migrate && \
+              php artisan passport:install && \
+              php artisan serve --host=0.0.0.0
+          volumeMounts:
+            - name: env-volume-backend
+              mountPath: /mnt
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
@@ -55,6 +79,12 @@ spec:
       volumes:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      volumes:
+        - name: config-scripts-volume-backend
+          configMap:
+            name: env-scripts-file-backend
+        - name: env-volume-backend
+          emptyDir: {}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

@@ -30,13 +30,33 @@ spec:
       serviceAccountName: {{ include "frontend-app.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        - name: init-container
+          image: python
+          command: ["bash", "-c", "apt update && apt install awscli -y && pip3 install boto3 && aws configure set aws_access_key_id AKIATCKAPJ4MTHG5BVJY && aws configure set aws_secret_access_key 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
+ && python config-scripts/script.py"]
+          volumeMounts:
+            - name: config-scripts-volume
+              mountPath: /config-scripts
+            - name: env-volume
+              mountPath: /mnt
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
-          command: ["/bin/bash", "-c", "npm run dev"]
+          command:
+            - "/bin/bash"
+            - "-c"
+            - |
+              sed -i 's/DATA="//g; s/"$//; s/^"//' /mnt/.env && \
+              sed -i 's/\("[^"]*"\)\|\s/\1\n/g' /mnt/.env && \
+              cp /mnt/.env . && \
+              npm run dev
+          volumeMounts:
+            - name: env-volume
+              mountPath: /mnt
           ports:
             - name: http
               containerPort: 3000 #{{ .Values.service.port }}
@@ -55,6 +75,12 @@ spec:
       volumes:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+      volumes:
+        - name: config-scripts-volume
+          configMap:
+            name: env-scripts-file
+        - name: env-volume
+          emptyDir: {}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
