@@ -54,7 +54,7 @@ spec:
               sed -i 's/\("[^"]*"\)\|\s/\1\n/g' /mnt/.env && \
               cp /mnt/.env . && \
               php artisan key:generate && \
-              php artisan migrate && \
+              php artisan migrate --force && \
               php artisan passport:install && \
               php artisan serve --host=0.0.0.0
           volumeMounts:
