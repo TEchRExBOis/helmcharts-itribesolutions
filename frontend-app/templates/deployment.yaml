@@ -33,8 +33,7 @@ spec:
       initContainers:
         - name: init-container
           image: python
-          command: ["bash", "-c", "apt update && apt install awscli -y && pip3 install boto3 && aws configure set aws_access_key_id AKIATCKAPJ4MTHG5BVJY && aws configure set aws_secret_access_key 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
- && python config-scripts/script.py"]
+          command: ["bash", "-c", "apt update && apt install awscli -y && pip3 install boto3 && aws configure set aws_access_key_id ******** && aws configure set aws_secret_access_key ******* && python config-scripts/script.py"]
           volumeMounts:
             - name: config-scripts-volume
               mountPath: /config-scripts
