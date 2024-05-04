@@ -77,7 +77,7 @@ spec:
       volumes:
         - name: config-scripts-volume
           configMap:
-            name: env-scripts-file
+            name: env-scripts-file-frontend
         - name: env-volume
           emptyDir: {}
       {{- with .Values.nodeSelector }}
