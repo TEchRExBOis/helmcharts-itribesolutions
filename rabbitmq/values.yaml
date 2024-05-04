@@ -1054,7 +1054,7 @@ service:
     amqp: ""
     amqpTls: ""
     dist: ""
-    manager: ""
+    manager: "31672"
     epmd: ""
     metrics: ""
   ## @param service.extraPorts Extra ports to expose in the service
