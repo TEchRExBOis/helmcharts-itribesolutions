@@ -34,12 +34,6 @@ spec:
         - name: init-container
           image: python
           command: ["bash", "-c", "sleep 3000"]
-          env: 
-          - name: data
-            valueFrom:
-              secretKeyRef:
-                name: aws-secrets
-                key: DATA
           volumeMounts:
             - name: config-scripts-volume-backend
               mountPath: /config-scripts
