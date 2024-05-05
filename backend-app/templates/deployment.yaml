@@ -30,19 +30,6 @@ spec:
       serviceAccountName: {{ include "backend-app.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
-      initContainers:
-        - name: init-container
-          image: python
-          command: ["bash", "-c", "sleep 3000"]
-          volumeMounts:
-            - name: config-scripts-volume-backend
-              mountPath: /config-scripts
-            - name: env-volume-backend
-              mountPath: /mnt 
-            - name: secrets-store-inline
-              mountPath: "/mnt/secrets"
-              readOnly: true
-            
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
@@ -53,16 +40,19 @@ spec:
             - "/bin/bash"
             - "-c"
             - |
-              sed -i 's/DATA="//g; s/"$//; s/^"//' /mnt/.env && \
-              sed -i 's/\("[^"]*"\)\|\s/\1\n/g' /mnt/.env && \
-              cp /mnt/.env . && \
+              apt update && apt install jq -y
+              cp /mnt/secrets/envfile .
+              jq -r '.DATA' envfile | sed 's/ /\n/g' > .env
               php artisan key:generate && \
               php artisan migrate --force && \
               php artisan passport:install && \
               php artisan serve --host=0.0.0.0
           volumeMounts:
+            - name: secrets-store-inline 
+              mountPath: "/mnt/secrets"
+              readOnly: true
             - name: env-volume-backend
-              mountPath: /mnt
+              mountPath: /mnt/secrets
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http

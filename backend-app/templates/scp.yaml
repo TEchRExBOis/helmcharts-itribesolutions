@@ -8,3 +8,4 @@ spec:
     objects: |
       - objectName: "arn:aws:secretsmanager:us-east-2:211125489433:secret:backend-env-8C4FDL"
         objectType: "secretsmanager"
+        objectAlias: "envfile"
