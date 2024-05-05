@@ -40,7 +40,7 @@ spec:
             - "-c"
             - |
               apt update && apt install jq -y
-              cp /mnt/secrets/envfile .
+              cp /mnt/env-secrets/envfile .
               jq -r '.DATA' envfile | sed 's/ /\n/g' > .env
               php artisan key:generate && \
               php artisan migrate --force && \
@@ -48,7 +48,7 @@ spec:
               php artisan serve --host=0.0.0.0
           volumeMounts:
             - name: secrets-store-inline 
-              mountPath: "/mnt/secrets"
+              mountPath: "/mnt/env-secrets"
               readOnly: true
             - name: env-volume-backend
               mountPath: "/mnt/secrets"
