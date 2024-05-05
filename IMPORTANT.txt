@@ -1,0 +1,32 @@
+Need to configure alb-controller 
+Need to configure need to give all permission of WAF on eksnode 
+Need to aws cli 2 
+
+FOR connecting secrects manager to eks
+
+helm repo add secrets-store-csi-driver https://kubernetes-sigs.github.io/secrets-store-csi-driver/charts
+helm install -n kube-system csi-secrets-store secrets-store-csi-driver/secrets-store-csi-driver
+kubectl apply -f https://raw.githubusercontent.com/aws/secrets-store-csi-driver-provider-aws/main/deployment/aws-provider-installer.yaml
+
+create policy json and paste this
+
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": "secretsmanager:GetSecretValue",
+            "Resource": "arn:aws:secretsmanager:us-east-2:211125489433:secret:backend-env-8C4FDL"
+        }
+    ]
+}
+
+
+create role fo web identity chose your cluster name and select that policy use that same policy in storage account
+
+For RABBITMQ
+
+echo "Username      : user"
+echo "Password      : $(kubectl get secret --namespace default rabbitmq -o jsonpath="{.data.rabbitmq-password}" | base64 -d)"
+
+GUI: ssh -i <.pem file path> -L 31672:nodeip:31672 username@bastionhostip -N
