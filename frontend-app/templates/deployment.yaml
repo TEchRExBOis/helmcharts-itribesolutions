@@ -30,15 +30,6 @@ spec:
       serviceAccountName: {{ include "frontend-app.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
-      initContainers:
-        - name: init-container
-          image: python
-          command: ["bash", "-c", "apt update && apt install awscli -y && pip3 install boto3 && aws configure set aws_access_key_id ******** && aws configure set aws_secret_access_key ******* && python config-scripts/script.py"]
-          volumeMounts:
-            - name: config-scripts-volume
-              mountPath: /config-scripts
-            - name: env-volume
-              mountPath: /mnt
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
@@ -49,13 +40,16 @@ spec:
             - "/bin/bash"
             - "-c"
             - |
-              sed -i 's/DATA="//g; s/"$//; s/^"//' /mnt/.env && \
-              sed -i 's/\("[^"]*"\)\|\s/\1\n/g' /mnt/.env && \
-              cp /mnt/.env . && \
+              apt update && apt install jq -y
+              cp /mnt/env-secrets/envfile .
+              jq -r '.DATA' envfile | sed 's/ /\n/g' > .env
               npm run dev
           volumeMounts:
-            - name: env-volume
-              mountPath: /mnt
+            - name: secrets-store-inline-frontend 
+              mountPath: "/mnt/env-secrets"
+              readOnly: true
+            - name: env-volume-frontend
+              mountPath: "/mnt/secrets"
           ports:
             - name: http
               containerPort: 3000 #{{ .Values.service.port }}
@@ -80,6 +74,12 @@ spec:
             name: env-scripts-file-frontend
         - name: env-volume
           emptyDir: {}
+        - name: secrets-store-inline-frontend
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: aws-secrets-frontend
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
