@@ -33,13 +33,22 @@ spec:
       initContainers:
         - name: init-container
           image: python
-          command: ["bash", "-c", "apt update && apt install awscli -y && pip3 install boto3 && aws configure set aws_access_key_id ***** && aws configure set aws_secret_access_key *****
- && python config-scripts/script.py"]
+          command: ["bash", "-c", "sleep 3000"]
+          env: 
+          - name: data
+            valueFrom:
+              secretKeyRef:
+                name: aws-secrets
+                key: DATA
           volumeMounts:
             - name: config-scripts-volume-backend
               mountPath: /config-scripts
             - name: env-volume-backend
               mountPath: /mnt 
+            - name: secrets-store-inline
+              mountPath: "/mnt/secrets"
+              readOnly: true
+            
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
@@ -85,6 +94,12 @@ spec:
             name: env-scripts-file-backend
         - name: env-volume-backend
           emptyDir: {}
+        - name: secrets-store-inline
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: aws-secrets
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
