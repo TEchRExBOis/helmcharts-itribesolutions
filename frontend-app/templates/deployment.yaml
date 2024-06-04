@@ -40,7 +40,6 @@ spec:
             - "/bin/bash"
             - "-c"
             - |
-              apt update && apt install jq -y
               cp /mnt/env-secrets/envfile .
               jq -r '.DATA' envfile | sed 's/ /\n/g' > .env
               npm run dev
