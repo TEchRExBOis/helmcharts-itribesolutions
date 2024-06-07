@@ -64,15 +64,19 @@ ingress:
     # kubernetes.io/ingress.class: nginx
     # kubernetes.io/tls-acme: "true"
   hosts:
+    - host: mailall.io
+      paths:
+        - path: /
+          pathType: Prefix
     - host: www.mailall.io
       paths:
         - path: /
           pathType: Prefix
 
-#    - host: mailall.io
-#      paths:
-#	- path: /
-#          pathType: Prefix
+            # - host: mailall.io
+            # paths:
+            #- path: /
+            # pathType: Prefix
 
   tls: []
   #  - secretName: chart-example-tls
@@ -84,6 +88,7 @@ resources: {}
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
   # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+#<<<<<<< HEAD
   #limits:
     #cpu: 1500m
     #memory: 1536Mi
@@ -91,6 +96,16 @@ resources: {}
     #cpu: 1000m
    # memory: 1024Mi
 #livenessProbe:
+#=======
+#  limits:
+    #cpu: 1500m
+#    memory: 1536Mi
+#  requests:
+    #cpu: 1000m
+#    memory: 1024Mi
+
+# livenessProbe:
+#>>>>>>> 50573319755205430d8a6fe47e8539033d7bf30f
 #   httpGet:
 #     path: /
 #     port: http
