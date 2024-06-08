@@ -1,0 +1,50 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: backend-app-scheduler
+spec:
+  schedule: "* * * * *"  # Ensure this is your intended schedule
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: {{ include "backend-app.serviceAccountName" . }}
+          containers:
+            - name: backend-scheduler
+              image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+              imagePullPolicy: IfNotPresent
+              command:
+                - "/bin/bash"
+                - "-c"
+                - |
+                  apt update && apt install jq -y
+                  cp /mnt/env-secrets/envfile .
+                  jq -r '.DATA' envfile | sed 's/ /\n/g' > .env
+                  cd  /leadsverificationsystem/backend && php artisan schedule:run
+              volumeMounts:
+                - name: secrets-store-inline 
+                  mountPath: "/mnt/env-secrets"
+                  readOnly: true
+                - name: env-volume-backend
+                  mountPath: "/mnt/secrets"
+
+          #initContainers:
+            #- name: pull-secret
+              #image: python:3.9
+              #command: ["sh", "-c", "pip install boto3 && python /mnt/env-secrets/script.py"]
+          restartPolicy: OnFailure
+          volumes:
+          - name: config-scripts-volume-backend
+            configMap:
+              name: env-scripts-file-backend
+          - name: env-volume-backend
+            emptyDir: {}
+          - name: secrets-store-inline
+            csi:
+              driver: secrets-store.csi.k8s.io
+              readOnly: true
+              volumeAttributes:
+                secretProviderClass: aws-secrets
+
